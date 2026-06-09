@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZENI — On-Demand Personal Security</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-border: rgba(201,168,76,0.3);
+    --ink: #0A0A0B;
+    --ink-2: #141416;
+    --ink-3: #1E1E22;
+    --ink-4: #2A2A30;
+    --surface: #16161A;
+    --muted: rgba(255,255,255,0.45);
+    --subtle: rgba(255,255,255,0.12);
+    --subtle2: rgba(255,255,255,0.06);
+    --white: #FFFFFF;
+    --danger: #E85D42;
+    --success: #3DB87A;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --radius-pill: 100px;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    background: var(--ink);
+    overflow: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    display: none;
+    min-height: 100vh;
+    flex-direction: column;
+    animation: fadeUp .28s ease both;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: .02em;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 10px;
+  }
+  .nav-back {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--subtle);
+    background: var(--subtle2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--white);
+    font-size: 18px;
+    transition: background .15s;
+  }
+  .nav-back:hover { background: var(--subtle); }
+  .nav-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+  }
+  .nav-action {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* ── WORDMARK ── */
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--white);
+  }
+  .wordmark span { color: var(--gold); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--radius);
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .18s;
+    letter-spacing: -.01em;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: var(--ink);
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--subtle);
+    color: var(--white);
+  }
+  .btn-outline:hover { background: var(--subtle2); }
+  .btn-danger {
+    background: rgba(232,93,66,0.15);
+    border: 1px solid rgba(232,93,66,0.3);
+    color: var(--danger);
+  }
+  .btn-sm {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--subtle);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .card-gold {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+
+  /* ── TAGS / BADGES ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+  }
+  .badge-gold { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); }
+  .badge-green { background: rgba(61,184,122,.12); color: var(--success); border: 1px solid rgba(61,184,122,.25); }
+  .badge-red { background: rgba(232,93,66,.12); color: var(--danger); border: 1px solid rgba(232,93,66,.25); }
+  .badge-muted { background: var(--subtle2); color: var(--muted); border: 1px solid var(--subtle); }
+
+  /* ── STARS ── */
+  .stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; }
+
+  /* ── SERVICE TIER CARD ── */
+  .tier-card {
+    background: var(--surface);
+    border: 1px solid var(--subtle);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all .18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tier-card:hover, .tier-card.selected {
+    border-color: var(--gold-border);
+    background: var(--gold-dim);
+  }
+  .tier-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 12px; right: 14px;
+    width: 22px; height: 22px;
+    background: var(--gold);
+    color: var(--ink);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 22px;
+    text-align: center;
+  }
+  .tier-icon {
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+  .tier-name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 3px;
+  }
+  .tier-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .tier-price {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .tier-price span { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+  /* ── PROFESSIONAL CARD ── */
+  .pro-card {
+    background: var(--surface);
+    border: 1px solid var(--subtle);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all .18s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pro-card:hover, .pro-card.selected {
+    border-color: var(--gold-border);
+  }
+  .pro-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--ink-4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    border: 2px solid var(--gold-border);
+  }
+  .pro-info { flex: 1; min-width: 0; }
+  .pro-name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+  }
+  .pro-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .pro-rate {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .pro-rate small { font-size: 11px; font-weight: 400; color: var(--muted); display: block; }
+
+  /* ── TRACKING DOT ── */
+  .pulse-ring {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--success);
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .pulse-ring::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid var(--success);
+    opacity: .5;
+    animation: pulse 1.6s ease-out infinite;
+  }
+  @keyframes pulse {
+    0%   { transform: scale(1); opacity: .5; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  /* ── TIMELINE STEPS ── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .timeline-step {
+    display: flex; gap: 14px; padding: 12px 0;
+  }
+  .timeline-step:not(:last-child) { border-bottom: 1px solid var(--subtle2); }
+  .tl-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    margin-top: 2px;
+  }
+  .tl-done { background: rgba(61,184,122,.15); color: var(--success); }
+  .tl-active { background: var(--gold-dim); color: var(--gold); }
+  .tl-pending { background: var(--subtle2); color: var(--muted); }
+  .tl-body { flex: 1; }
+  .tl-label { font-size: 13px; font-weight: 500; color: var(--white); }
+  .tl-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  /* ── MAP MOCK ── */
+  .map-mock {
+    width: 100%; height: 200px;
+    background: var(--ink-3);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--subtle);
+  }
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .map-road-h {
+    position: absolute;
+    height: 2px;
+    background: rgba(255,255,255,.1);
+    left: 0; right: 0;
+  }
+  .map-road-v {
+    position: absolute;
+    width: 2px;
+    background: rgba(255,255,255,.1);
+    top: 0; bottom: 0;
+  }
+  .map-pin {
+    position: absolute;
+    width: 24px; height: 24px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .map-pin-inner {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--white);
+    transform: rotate(45deg);
+  }
+  .map-pin-consumer { background: var(--gold); bottom: 55px; left: 55px; }
+  .map-pin-pro { background: var(--success); top: 60px; right: 80px; }
+  .map-route {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+  }
+  .map-eta-chip {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    background: var(--ink-2);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-pill);
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    font-family: var(--font-display);
+  }
+
+  /* ── SAFETY BAR ── */
+  .safety-bar {
+    background: rgba(232,93,66,.1);
+    border: 1px solid rgba(232,93,66,.25);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .safety-bar:hover { background: rgba(232,93,66,.18); }
+  .safety-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(232,93,66,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ── RATING ── */
+  .star-btn {
+    font-size: 36px;
+    cursor: pointer;
+    transition: transform .12s;
+    color: var(--subtle);
+    border: none;
+    background: none;
+    padding: 4px;
+  }
+  .star-btn.lit { color: var(--gold); }
+  .star-btn:hover { transform: scale(1.2); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--subtle);
+    margin: 4px 0;
+  }
+
+  /* ── SCROLL AREA ── */
+  .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 20px 100px;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* ── BOTTOM SAFE ── */
+  .bottom-safe {
+    padding: 16px 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    background: linear-gradient(transparent, var(--ink) 40%);
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── MISC ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+  }
+  .h2 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.02em;
+  }
+  .h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .text-gold { color: var(--gold); }
+  .text-muted { color: var(--muted); font-size: 14px; }
+  .text-small { font-size: 13px; color: var(--muted); }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-20 { margin-top: 20px; }
+  .mt-24 { margin-top: 24px; }
+  .flex-row { display: flex; align-items: center; gap: 10px; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+
+  /* ── BOTTOM TAB BAR ── */
+  .tab-bar {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%; max-width: 420px;
+    background: rgba(10,10,11,.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--subtle);
+    display: flex;
+    z-index: 100;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0 14px;
+    cursor: pointer;
+    gap: 4px;
+  }
+  .tab-icon { font-size: 22px; color: var(--muted); transition: color .15s; }
+  .tab-label { font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: .03em; transition: color .15s; }
+  .tab-item.active .tab-icon,
+  .tab-item.active .tab-label { color: var(--gold); }
+
+  /* ── ONBOARDING CAROUSEL ── */
+  .onboard-dots { display: flex; gap: 6px; justify-content: center; margin: 8px 0; }
+  .onboard-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--subtle);
+    transition: all .2s;
+  }
+  .onboard-dot.active { width: 20px; border-radius: 3px; background: var(--gold); }
+
+  /* ── TRUST BADGE ── */
+  .trust-row {
+    display: flex; gap: 8px;
+  }
+  .trust-item {
+    flex: 1;
+    background: var(--subtle2);
+    border: 1px solid var(--subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .trust-item-icon { font-size: 18px; margin-bottom: 4px; }
+  .trust-item-label { font-size: 11px; color: var(--muted); line-height: 1.3; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-track {
+    height: 3px;
+    background: var(--subtle);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  /* ── NOTIFICATION TOAST ── */
+  .toast {
+    position: fixed;
+    top: 60px;
+    left: 50%; transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+    z-index: 999;
+    white-space: nowrap;
+    animation: toastIn .25s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ── VERIFICATION DOTS ── */
+  .verify-list { display: flex; flex-direction: column; gap: 8px; }
+  .verify-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--subtle2);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+  }
+  .verify-check {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .v-done { background: rgba(61,184,122,.15); color: var(--success); }
+  .v-pend { background: var(--subtle); color: var(--muted); font-size: 10px; }
+
+  /* home screen specifics */
+  .hero-bg {
+    position: absolute; top: 0; left: 0; right: 0; height: 320px;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── DESKTOP WRAPPER ── */
+  @media(min-width: 600px) {
+    body { background: #050507; display: flex; align-items: flex-start; justify-content: center; padding: 32px 16px 64px; }
+    .app {
+      border-radius: 40px;
+      border: 1px solid var(--subtle);
+      min-height: 780px;
+      height: 780px;
+      overflow: hidden;
+      box-shadow: 0 40px 120px rgba(0,0,0,.7);
+    }
+    .screen { min-height: 780px; }
+    .tab-bar { border-radius: 0 0 40px 40px; }
+    .device-label {
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: rgba(255,255,255,.2);
+      font-family: 'Inter', sans-serif;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+  }
+  @media(max-width: 599px) {
+    .device-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<p class="device-label">ZENI · Prototype · Board Preview</p>
+
+<div class="app" id="app">
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 1: SPLASH
+  ══════════════════════════════════════════════════ -->
+  <div class="screen active" id="screen-splash" style="align-items:center;justify-content:center;padding:40px 32px;text-align:center;position:relative">
+    <div class="hero-bg"></div>
+    <div style="margin-bottom:48px">
+      <div style="font-size:64px;margin-bottom:16px">🛡️</div>
+      <div class="wordmark" style="font-size:48px;margin-bottom:8px">ZEN<span>I</span></div>
+      <div class="text-muted" style="font-size:16px;line-height:1.5">Personal security.<br>On demand. On your terms.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%">
+      <button class="btn btn-primary" onclick="goto('screen-home')">Get started</button>
+    </div>
+    <div class="text-small" style="margin-top:24px;line-height:1.6">
+      Trusted. Vetted. Verified.<br>
+      <span class="text-gold">Licensed professionals in your city.</span>
+    </div>
+    <div class="trust-row" style="margin-top:28px;width:100%">
+      <div class="trust-item">
+        <div class="trust-item-icon">🔐</div>
+        <div class="trust-item-label">ID verified</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-item-icon">📋</div>
+        <div class="trust-item-label">Licensed &amp; insured</div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-item-icon">⭐</div>
+        <div class="trust-item-label">Rated by clients</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 2: HOME (CONSUMER)
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-home" style="position:relative">
+    <div class="hero-bg"></div>
+    <div class="status-bar">
+      <span>9:41</span><span>Sacramento, CA</span><span>●●●</span>
+    </div>
+    <div style="padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="text-small">Good evening,</div>
+        <div class="h2" style="margin-top:2px">Kennedy <span class="text-gold">✦</span></div>
+      </div>
+      <div style="width:42px;height:42px;border-radius:50%;background:var(--gold-dim);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:var(--gold);cursor:pointer" onclick="showToast('Profile settings coming soon')">K</div>
+    </div>
+    <div class="scroll-area" style="padding-top:16px">
+      <!-- quick action -->
+      <div class="card-gold" style="margin-bottom:20px;cursor:pointer" onclick="goto('screen-service')">
+        <div class="flex-between">
+          <div>
+            <div class="section-label">Book now</div>
+            <div class="h3">I need security support</div>
+            <div class="text-small" style="margin-top:4px">Find a professional near you</div>
+          </div>
+          <div style="font-size:36px">🛡️</div>
+        </div>
+        <div class="mt-12">
+          <span class="badge badge-green">● 12 pros available nearby</span>
+        </div>
+      </div>
+
+      <!-- service tiers preview -->
+      <div class="section-label">Service tiers</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        <div class="tier-card" onclick="selectTierAndGo('escort')">
+          <div class="tier-icon">🚶‍♀️</div>
+          <div class="tier-name">Escort</div>
+          <div class="tier-desc">Walk-to-car or venue entry</div>
+          <div class="tier-price">$35<span>/hr</span></div>
+        </div>
+        <div class="tier-card" onclick="selectTierAndGo('companion')">
+          <div class="tier-icon">🤝</div>
+          <div class="tier-name">Companion</div>
+          <div class="tier-desc">Event or meeting support</div>
+          <div class="tier-price">$65<span>/hr</span></div>
+        </div>
+        <div class="tier-card" onclick="selectTierAndGo('travel')">
+          <div class="tier-icon">✈️</div>
+          <div class="tier-name">Travel</div>
+          <div class="tier-desc">Airport &amp; city transit detail</div>
+          <div class="tier-price">$95<span>/hr</span></div>
+        </div>
+        <div class="tier-card" onclick="selectTierAndGo('executive')">
+          <div class="tier-icon">💼</div>
+          <div class="tier-name">Executive</div>
+          <div class="tier-desc">Full-day or ongoing detail</div>
+          <div class="tier-price">$150<span>/hr</span></div>
+        </div>
+      </div>
+
+      <!-- recent + trust -->
+      <div class="section-label">How ZENI works</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+          <div style="font-size:22px;flex-shrink:0">🔍</div>
+          <div><div class="h3" style="font-size:14px">Every professional is vetted</div><div class="text-small" style="margin-top:3px">Licensed, background-checked, and rated by real clients before their first booking.</div></div>
+        </div>
+        <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+          <div style="font-size:22px;flex-shrink:0">📍</div>
+          <div><div class="h3" style="font-size:14px">Track your detail live</div><div class="text-small" style="margin-top:3px">See your professional en route in real time. Both parties tracked for accountability.</div></div>
+        </div>
+        <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+          <div style="font-size:22px;flex-shrink:0">🔒</div>
+          <div><div class="h3" style="font-size:14px">Your identity stays private</div><div class="text-small" style="margin-top:3px">Encrypted communications. Your phone number is never shared with anyone.</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- tab bar -->
+    <div class="tab-bar">
+      <div class="tab-item active" onclick="goto('screen-home')"><div class="tab-icon">🏠</div><div class="tab-label">Home</div></div>
+      <div class="tab-item" onclick="goto('screen-service')"><div class="tab-icon">🛡️</div><div class="tab-label">Book</div></div>
+      <div class="tab-item" onclick="goto('screen-tracking')"><div class="tab-icon">📍</div><div class="tab-label">Active</div></div>
+      <div class="tab-item" onclick="showToast('History coming soon')"><div class="tab-icon">📋</div><div class="tab-label">History</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 3: SELECT SERVICE TIER
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-service">
+    <div class="status-bar"><span>9:41</span><span></span><span>●●●</span></div>
+    <div class="nav">
+      <div class="nav-back" onclick="goto('screen-home')">←</div>
+      <div class="nav-title">Book a detail</div>
+      <div></div>
+    </div>
+    <div class="progress-track" style="margin:0 20px 0"><div class="progress-fill" style="width:25%"></div></div>
+    <div class="scroll-area">
+      <div class="section-label">Step 1 of 4 — Choose your service</div>
+      <div class="h2" style="margin-bottom:6px">What do you need?</div>
+      <div class="text-muted" style="margin-bottom:20px">Select the service that fits your situation. You can customize preferences on the next screen.</div>
+
+      <div style="display:flex;flex-direction:column;gap:10px" id="tier-list">
+        <div class="tier-card" id="tier-escort" onclick="selectTier('escort')">
+          <div class="flex-between" style="margin-bottom:6px">
+            <div class="flex-row gap-8"><div class="tier-icon" style="margin:0">🚶‍♀️</div><div class="tier-name">Walk &amp; Escort</div></div>
+            <div class="tier-price">$35<span>/hr</span></div>
+          </div>
+          <div class="tier-desc">Parking lot, late-night venue exit, or apartment building entry. Typically 30–60 minutes.</div>
+          <div class="mt-8 flex-row gap-8"><span class="badge badge-muted">Unarmed</span><span class="badge badge-green">Most booked</span></div>
+        </div>
+        <div class="tier-card" id="tier-companion" onclick="selectTier('companion')">
+          <div class="flex-between" style="margin-bottom:6px">
+            <div class="flex-row gap-8"><div class="tier-icon" style="margin:0">🤝</div><div class="tier-name">Event Companion</div></div>
+            <div class="tier-price">$65<span>/hr</span></div>
+          </div>
+          <div class="tier-desc">Conference, networking event, or social occasion. Professional presence, full detail duration.</div>
+          <div class="mt-8 flex-row gap-8"><span class="badge badge-muted">Unarmed</span></div>
+        </div>
+        <div class="tier-card" id="tier-travel" onclick="selectTier('travel')">
+          <div class="flex-between" style="margin-bottom:6px">
+            <div class="flex-row gap-8"><div class="tier-icon" style="margin:0">✈️</div><div class="tier-name">Travel Detail</div></div>
+            <div class="tier-price">$95<span>/hr</span></div>
+          </div>
+          <div class="tier-desc">Airport arrival, hotel transfer, or city travel in an unfamiliar location. Minimum 2 hours.</div>
+          <div class="mt-8 flex-row gap-8"><span class="badge badge-muted">Unarmed</span><span class="badge badge-gold">Premium</span></div>
+        </div>
+        <div class="tier-card" id="tier-executive" onclick="selectTier('executive')">
+          <div class="flex-between" style="margin-bottom:6px">
+            <div class="flex-row gap-8"><div class="tier-icon" style="margin:0">💼</div><div class="tier-name">Executive Detail</div></div>
+            <div class="tier-price">$150<span>/hr</span></div>
+          </div>
+          <div class="tier-desc">Full day or recurring engagement. Corporate meeting, media appearance, or VIP event. Minimum 4 hours.</div>
+          <div class="mt-8 flex-row gap-8"><span class="badge badge-muted">Armed optional</span><span class="badge badge-gold">Premium</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-safe">
+      <button class="btn btn-primary" onclick="goto('screen-prefs')">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 4: PREFERENCES
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-prefs">
+    <div class="status-bar"><span>9:41</span><span></span><span>●●●</span></div>
+    <div class="nav">
+      <div class="nav-back" onclick="goto('screen-service')">←</div>
+      <div class="nav-title">Your preferences</div>
+      <div></div>
+    </div>
+    <div class="progress-track" style="margin:0 20px 0"><div class="progress-fill" style="width:50%"></div></div>
+    <div class="scroll-area">
+      <div class="section-label">Step 2 of 4 — Customize</div>
+      <div class="h2" style="margin-bottom:6px">Make it yours</div>
+      <div class="text-muted" style="margin-bottom:20px">All preferences are matched before dispatch. No surprises.</div>
+
+      <div class="section-label">Professional preference</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px">
+        <div class="tier-card selected" id="pref-any" style="text-align:center;padding:12px 8px" onclick="selectPref('any')">
+          <div style="font-size:22px;margin-bottom:6px">👤</div>
+          <div style="font-size:12px;font-weight:600">Any</div>
+        </div>
+        <div class="tier-card" id="pref-female" style="text-align:center;padding:12px 8px" onclick="selectPref('female')">
+          <div style="font-size:22px;margin-bottom:6px">👩</div>
+          <div style="font-size:12px;font-weight:600">Female</div>
+        </div>
+        <div class="tier-card" id="pref-male" style="text-align:center;padding:12px 8px" onclick="selectPref('male')">
+          <div style="font-size:22px;margin-bottom:6px">👨</div>
+          <div style="font-size:12px;font-weight:600">Male</div>
+        </div>
+      </div>
+
+      <div class="section-label">When do you need them?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+        <div class="tier-card selected" id="time-now" style="text-align:center;padding:14px 8px" onclick="selectTime('now')">
+          <div style="font-size:22px;margin-bottom:6px">⚡</div>
+          <div style="font-size:13px;font-weight:600">Now</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Avg 18 min arrival</div>
+        </div>
+        <div class="tier-card" id="time-schedule" style="text-align:center;padding:14px 8px" onclick="selectTime('schedule')">
+          <div style="font-size:22px;margin-bottom:6px">📅</div>
+          <div style="font-size:13px;font-weight:600">Schedule</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Pick date &amp; time</div>
+        </div>
+      </div>
+
+      <div class="section-label">Duration</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:20px">
+        <div class="tier-card" id="dur-1" style="text-align:center;padding:12px 4px;font-size:13px;font-weight:600" onclick="selectDur('1')">1 hr</div>
+        <div class="tier-card selected" id="dur-2" style="text-align:center;padding:12px 4px;font-size:13px;font-weight:600" onclick="selectDur('2')">2 hrs</div>
+        <div class="tier-card" id="dur-3" style="text-align:center;padding:12px 4px;font-size:13px;font-weight:600" onclick="selectDur('3')">3 hrs</div>
+        <div class="tier-card" id="dur-4" style="text-align:center;padding:12px 4px;font-size:13px;font-weight:600" onclick="selectDur('4+')">4+ hrs</div>
+      </div>
+
+      <div class="card" style="margin-bottom:8px">
+        <div class="flex-between">
+          <div class="h3" style="font-size:14px">Verified ID required</div>
+          <div style="width:44px;height:26px;border-radius:13px;background:var(--gold);position:relative;cursor:pointer">
+            <div style="position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--ink)"></div>
+          </div>
+        </div>
+        <div class="text-small" style="margin-top:4px">Professional must be identity-verified before dispatch. Recommended.</div>
+      </div>
+    </div>
+    <div class="bottom-safe">
+      <div class="card-gold" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div><div class="text-small">Estimated total</div><div class="h3 text-gold">$130.00</div></div>
+        <div class="text-small" style="text-align:right">2 hrs · Companion<br>Platform fee included</div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('screen-match')">Match me →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 5: MATCHING
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-match" style="align-items:center;justify-content:center;text-align:center;padding:40px 24px">
+    <div style="margin-bottom:32px">
+      <div style="font-size:56px;margin-bottom:16px;animation:spin 2s linear infinite" id="match-spinner">🔍</div>
+      <div class="h2" id="match-title">Finding your professional</div>
+      <div class="text-muted" id="match-sub" style="margin-top:8px">Checking 12 available professionals near you…</div>
+    </div>
+    <div class="card" style="width:100%;text-align:left;margin-bottom:16px">
+      <div class="timeline">
+        <div class="timeline-step">
+          <div class="tl-icon tl-done">✓</div>
+          <div class="tl-body"><div class="tl-label">Location confirmed</div><div class="tl-sub">Sacramento, CA · Downtown</div></div>
+        </div>
+        <div class="timeline-step">
+          <div class="tl-icon tl-done">✓</div>
+          <div class="tl-body"><div class="tl-label">License check</div><div class="tl-sub">CA BSIS guard cards verified</div></div>
+        </div>
+        <div class="timeline-step">
+          <div class="tl-icon tl-active" id="tl-matching" style="animation:pulse 1.5s ease infinite">◎</div>
+          <div class="tl-body"><div class="tl-label">Matching preferences</div><div class="tl-sub">Rating · availability · distance</div></div>
+        </div>
+        <div class="timeline-step">
+          <div class="tl-icon tl-pending" id="tl-confirm">→</div>
+          <div class="tl-body"><div class="tl-label">Awaiting confirmation</div><div class="tl-sub">Professional will accept shortly</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="match-found" style="display:none;width:100%">
+      <div class="pro-card" style="margin-bottom:12px;border-color:var(--gold-border)">
+        <div class="pro-avatar">DA</div>
+        <div class="pro-info">
+          <div class="pro-name">Diana A.</div>
+          <div class="stars">★★★★★</div>
+          <div class="pro-meta">4.9 · 847 details · Licensed CA</div>
+        </div>
+        <div class="pro-rate">$65<small>/hr</small></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('screen-confirm')">Confirm Diana →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 6: CONFIRM & PAY
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-confirm">
+    <div class="status-bar"><span>9:43</span><span></span><span>●●●</span></div>
+    <div class="nav">
+      <div class="nav-back" onclick="goto('screen-match')">←</div>
+      <div class="nav-title">Confirm booking</div>
+      <div></div>
+    </div>
+    <div class="progress-track" style="margin:0 20px 0"><div class="progress-fill" style="width:75%"></div></div>
+    <div class="scroll-area">
+      <div class="section-label">Step 3 of 4 — Review &amp; pay</div>
+
+      <!-- Pro profile mini -->
+      <div class="card-gold" style="margin-bottom:16px;display:flex;gap:14px;align-items:center">
+        <div class="pro-avatar" style="width:60px;height:60px;font-size:22px">DA</div>
+        <div style="flex:1">
+          <div class="h3">Diana A.</div>
+          <div class="stars" style="margin:2px 0">★★★★★</div>
+          <div class="text-small">4.9 · 847 details · 6 yrs experience</div>
+        </div>
+        <div>
+          <span class="badge badge-green">Available</span>
+        </div>
+      </div>
+
+      <!-- Verification chips -->
+      <div class="section-label">Verified credentials</div>
+      <div class="verify-list" style="margin-bottom:16px">
+        <div class="verify-item"><div class="verify-check v-done">✓</div><div><div style="font-size:13px;font-weight:500">CA BSIS Guard Card</div><div class="text-small">Expires Jun 2026 · Unarmed</div></div></div>
+        <div class="verify-item"><div class="verify-check v-done">✓</div><div><div style="font-size:13px;font-weight:500">Background check</div><div class="text-small">Cleared · Checkr · 30 days ago</div></div></div>
+        <div class="verify-item"><div class="verify-check v-done">✓</div><div><div style="font-size:13px;font-weight:500">Identity verified</div><div class="text-small">Government ID confirmed · Persona</div></div></div>
+        <div class="verify-item"><div class="verify-check v-done">✓</div><div><div style="font-size:13px;font-weight:500">Insured &amp; bonded</div><div class="text-small">$1M liability coverage</div></div></div>
+      </div>
+
+      <!-- Booking summary -->
+      <div class="section-label">Booking summary</div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="flex-between"><span class="text-small">Service</span><span style="font-size:13px;font-weight:500">Event Companion</span></div>
+          <div class="flex-between"><span class="text-small">Duration</span><span style="font-size:13px;font-weight:500">2 hours</span></div>
+          <div class="flex-between"><span class="text-small">Location</span><span style="font-size:13px;font-weight:500">Downtown Sacramento</span></div>
+          <div class="flex-between"><span class="text-small">Timing</span><span style="font-size:13px;font-weight:500">Tonight · ASAP</span></div>
+          <div class="flex-between"><span class="text-small">Professional</span><span style="font-size:13px;font-weight:500">Diana A.</span></div>
+          <div class="divider"></div>
+          <div class="flex-between"><span class="text-small">Service rate</span><span style="font-size:13px">$65 × 2 hrs = $130.00</span></div>
+          <div class="flex-between"><span class="text-small">Platform fee</span><span style="font-size:13px">$13.00</span></div>
+          <div class="divider"></div>
+          <div class="flex-between"><span style="font-size:14px;font-weight:600">Total charged now</span><span class="text-gold h3">$143.00</span></div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="section-label">Payment</div>
+      <div class="card" style="margin-bottom:8px;display:flex;gap:12px;align-items:center;cursor:pointer" onclick="showToast('Manage payment methods')">
+        <div style="font-size:24px">💳</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:500">Visa ending in 4242</div><div class="text-small">Tap to change</div></div>
+        <div style="color:var(--muted)">›</div>
+      </div>
+    </div>
+    <div class="bottom-safe">
+      <div class="text-small" style="text-align:center;margin-bottom:4px">Funds held securely until detail is complete</div>
+      <button class="btn btn-primary" onclick="goto('screen-tracking')">Book Diana · $143.00 →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 7: LIVE TRACKING
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-tracking">
+    <div class="status-bar"><span>9:48</span><span></span><span>●●●</span></div>
+    <div style="padding:12px 20px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="flex-row gap-8">
+          <div class="pulse-ring"></div>
+          <div class="h3">Detail active</div>
+        </div>
+        <div class="text-small" style="margin-top:2px">Diana is on her way · ETA 8 min</div>
+      </div>
+      <span class="badge badge-green">Live</span>
+    </div>
+
+    <div class="scroll-area" style="padding-top:14px">
+      <!-- Map -->
+      <div class="map-mock" style="margin-bottom:14px">
+        <div class="map-grid"></div>
+        <div class="map-road-h" style="top:45%"></div>
+        <div class="map-road-h" style="top:70%"></div>
+        <div class="map-road-v" style="left:35%"></div>
+        <div class="map-road-v" style="left:65%"></div>
+        <!-- Route line -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M72 35 L72 45 L37 45 L37 67" stroke="rgba(201,168,76,.7)" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+        </svg>
+        <!-- Pins -->
+        <div class="map-pin map-pin-consumer" style="display:flex;align-items:center;justify-content:center">
+          <div class="map-pin-inner"></div>
+        </div>
+        <div class="map-pin map-pin-pro" style="display:flex;align-items:center;justify-content:center">
+          <div class="map-pin-inner"></div>
+        </div>
+        <div class="map-eta-chip">ETA 8 min</div>
+        <!-- Legend -->
+        <div style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--white)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>You
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--white)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--success)"></div>Diana
+          </div>
+        </div>
+      </div>
+
+      <!-- Pro mini card -->
+      <div class="pro-card" style="margin-bottom:12px">
+        <div class="pro-avatar">DA</div>
+        <div class="pro-info">
+          <div class="pro-name">Diana A.</div>
+          <div class="pro-meta">Event Companion · 2 hrs · CA Licensed</div>
+          <div class="flex-row gap-8" style="margin-top:4px">
+            <span class="badge badge-green">En route</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+          <div onclick="showToast('Encrypted call connected')" style="width:38px;height:38px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px">📞</div>
+          <div onclick="showToast('Encrypted message sent')" style="width:38px;height:38px;border-radius:50%;background:var(--subtle2);border:1px solid var(--subtle);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px">💬</div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="section-label">Detail timeline</div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="timeline">
+          <div class="timeline-step">
+            <div class="tl-icon tl-done">✓</div>
+            <div class="tl-body"><div class="tl-label">Booking confirmed</div><div class="tl-sub">9:43 PM · Secured $143.00</div></div>
+          </div>
+          <div class="timeline-step">
+            <div class="tl-icon tl-done">✓</div>
+            <div class="tl-body"><div class="tl-label">Diana accepted</div><div class="tl-sub">9:44 PM · ID verified · Licensed</div></div>
+          </div>
+          <div class="timeline-step">
+            <div class="tl-icon tl-active">◎</div>
+            <div class="tl-body"><div class="tl-label">En route to you</div><div class="tl-sub">Now · ETA 8 minutes</div></div>
+          </div>
+          <div class="timeline-step">
+            <div class="tl-icon tl-pending">→</div>
+            <div class="tl-body"><div class="tl-label">Detail begins</div><div class="tl-sub">Awaiting arrival</div></div>
+          </div>
+          <div class="timeline-step">
+            <div class="tl-icon tl-pending">→</div>
+            <div class="tl-body"><div class="tl-label">Detail complete</div><div class="tl-sub">Payout released to Diana</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safety bar -->
+      <div class="safety-bar" onclick="showToast('🚨 Emergency ops line connected — 24/7 support')" style="margin-bottom:12px">
+        <div class="safety-icon">🚨</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--danger)">Emergency escalation</div>
+          <div class="text-small" style="margin-top:2px">Tap to reach ZENI ops — 24/7</div>
+        </div>
+        <div style="color:var(--danger);font-size:20px">›</div>
+      </div>
+
+      <!-- Trust note -->
+      <div class="card" style="margin-bottom:8px;background:var(--subtle2)">
+        <div class="flex-row gap-8" style="margin-bottom:4px">
+          <div>🔐</div>
+          <div style="font-size:13px;font-weight:500">This detail is being logged</div>
+        </div>
+        <div class="text-small">All GPS, communications, and activity are recorded in a tamper-evident log for your protection.</div>
+      </div>
+    </div>
+
+    <!-- tab bar -->
+    <div class="tab-bar">
+      <div class="tab-item" onclick="goto('screen-home')"><div class="tab-icon">🏠</div><div class="tab-label">Home</div></div>
+      <div class="tab-item" onclick="goto('screen-service')"><div class="tab-icon">🛡️</div><div class="tab-label">Book</div></div>
+      <div class="tab-item active"><div class="tab-icon">📍</div><div class="tab-label">Active</div></div>
+      <div class="tab-item" onclick="showToast('History coming soon')"><div class="tab-icon">📋</div><div class="tab-label">History</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 8: RATING
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-rating" style="align-items:center;text-align:center;padding:32px 24px 24px">
+    <div style="margin-bottom:8px;font-size:48px">🎉</div>
+    <div class="h2" style="margin-bottom:6px">Detail complete</div>
+    <div class="text-muted" style="margin-bottom:24px">Diana completed your 2-hour Event Companion detail. How did it go?</div>
+
+    <div class="card-gold" style="width:100%;margin-bottom:20px;padding:20px">
+      <div class="pro-avatar" style="margin:0 auto 10px;width:60px;height:60px;font-size:22px">DA</div>
+      <div class="h3">Diana A.</div>
+      <div class="text-small" style="margin:4px 0 16px">Rate your experience</div>
+      <div style="display:flex;justify-content:center;gap:4px" id="stars-row">
+        <button class="star-btn lit" onclick="setRating(1)">★</button>
+        <button class="star-btn lit" onclick="setRating(2)">★</button>
+        <button class="star-btn lit" onclick="setRating(3)">★</button>
+        <button class="star-btn lit" onclick="setRating(4)">★</button>
+        <button class="star-btn lit" onclick="setRating(5)">★</button>
+      </div>
+      <div class="text-gold h3" style="margin-top:8px" id="rating-label">5 stars — Outstanding</div>
+    </div>
+
+    <div style="width:100%;margin-bottom:16px">
+      <textarea placeholder="Leave a note for Diana (optional)" style="width:100%;background:var(--surface);border:1px solid var(--subtle);border-radius:var(--radius);padding:14px;font-family:var(--font-body);font-size:14px;color:var(--white);resize:none;height:90px;outline:none"></textarea>
+    </div>
+
+    <div class="card" style="width:100%;margin-bottom:16px;text-align:left">
+      <div class="flex-between" style="margin-bottom:6px">
+        <span style="font-size:13px;font-weight:500">Payout released to Diana</span>
+        <span class="badge badge-green">✓ Sent</span>
+      </div>
+      <div class="flex-between">
+        <span class="text-small">Diana earned</span>
+        <span style="font-size:13px;font-weight:600;color:var(--success)">$116.00</span>
+      </div>
+    </div>
+
+    <div style="width:100%;display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-primary" onclick="submitRating()">Submit rating →</button>
+      <button class="btn btn-outline" onclick="goto('screen-home')">Done</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCREEN 9: PROFESSIONAL DASHBOARD
+  ══════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-pro-dash" style="position:relative">
+    <div class="hero-bg"></div>
+    <div class="status-bar"><span>9:41</span><span></span><span>●●●</span></div>
+    <div style="padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="text-small">Professional portal</div>
+        <div class="h2" style="margin-top:2px">Marcus <span class="text-gold">✦</span></div>
+      </div>
+      <div>
+        <span class="badge badge-green">● Active</span>
+      </div>
+    </div>
+    <div class="scroll-area" style="padding-top:16px">
+      <!-- Earnings -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        <div class="card" style="text-align:center">
+          <div class="text-small">This week</div>
+          <div class="h2 text-gold" style="margin-top:4px">$847</div>
+          <div class="text-small" style="margin-top:2px">12 details</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div class="text-small">Rating</div>
+          <div class="h2 text-gold" style="margin-top:4px">4.97</div>
+          <div class="text-small" style="margin-top:2px">234 reviews</div>
+        </div>
+      </div>
+
+      <!-- Incoming booking -->
+      <div class="section-label">New booking request</div>
+      <div class="card-gold" style="margin-bottom:16px">
+        <div class="flex-between" style="margin-bottom:10px">
+          <div class="h3">Event Companion</div>
+          <span class="badge badge-gold">New</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+          <div class="flex-row gap-8"><span class="text-small">📍</span><span style="font-size:13px">Downtown Sacramento · 1.2 mi away</span></div>
+          <div class="flex-row gap-8"><span class="text-small">⏱️</span><span style="font-size:13px">Tonight · 2 hours · ASAP</span></div>
+          <div class="flex-row gap-8"><span class="text-small">💰</span><span style="font-size:13px;font-weight:600;color:var(--gold)">$116.00 payout</span></div>
+          <div class="flex-row gap-8"><span class="text-small">👤</span><span style="font-size:13px">ID-verified client · 4.9 ★</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="showToast('Booking declined')">Decline</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('✓ Booking accepted — navigate to client')">Accept →</button>
+        </div>
+      </div>
+
+      <!-- Credentials -->
+      <div class="section-label">Your credentials</div>
+      <div class="verify-list" style="margin-bottom:16px">
+        <div class="verify-item"><div class="verify-check v-done">✓</div><div><div style="font-size:13px;font-weight:500">CA BSIS Guard Card</div><div class="text-small">Active · Expires Dec 2026</div></div></div>
+        <div class="verify-item"><div class="verify-check v-done">✓</div><div><div style="font-size:13px;font-weight:500">Background check</div><div class="text-small">Cleared · Updated 14 days ago</div></div></div>
+        <div class="verify-item"><div class="verify-check v-done">✓</div><div><div style="font-size:13px;font-weight:500">Identity verified</div><div class="text-small">Government ID · Persona</div></div></div>
+      </div>
+
+      <!-- Payout -->
+      <div class="section-label">Payout</div>
+      <div class="card" style="margin-bottom:8px;display:flex;gap:12px;align-items:center;cursor:pointer" onclick="showToast('Bank account: Chase ···4891')">
+        <div style="font-size:24px">🏦</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:500">Chase Bank ···4891</div><div class="text-small">Instant payout enabled</div></div>
+        <div style="color:var(--muted)">›</div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-item active"><div class="tab-icon">🏠</div><div class="tab-label">Dashboard</div></div>
+      <div class="tab-item" onclick="showToast('Availability calendar')"><div class="tab-icon">📅</div><div class="tab-label">Schedule</div></div>
+      <div class="tab-item" onclick="showToast('Earnings history')"><div class="tab-icon">💰</div><div class="tab-label">Earnings</div></div>
+      <div class="tab-item" onclick="goto('screen-splash')"><div class="tab-icon">👤</div><div class="tab-label">Profile</div></div>
+    </div>
+  </div>
+
+</div><!-- end .app -->
+
+<script>
+let currentScreen = 'screen-splash';
+let selectedTier = 'companion';
+let matchTimer = null;
+
+function goto(id) {
+  document.getElementById(currentScreen).classList.remove('active');
+  currentScreen = id;
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  if (id === 'screen-match') startMatch();
+  window.scrollTo(0,0);
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+function selectTierAndGo(tier) {
+  selectedTier = tier;
+  goto('screen-service');
+  setTimeout(() => selectTier(tier), 80);
+}
+
+function selectTier(tier) {
+  selectedTier = tier;
+  document.querySelectorAll('.tier-card[id^="tier-"]').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById('tier-' + tier);
+  if (el) el.classList.add('selected');
+}
+
+function selectPref(p) {
+  ['any','female','male'].forEach(x => {
+    const el = document.getElementById('pref-' + x);
+    if (el) el.classList.toggle('selected', x === p);
+  });
+}
+
+function selectTime(t) {
+  ['now','schedule'].forEach(x => {
+    const el = document.getElementById('time-' + x);
+    if (el) el.classList.toggle('selected', x === t);
+  });
+}
+
+function selectDur(d) {
+  ['1','2','3','4'].forEach(x => {
+    const el = document.getElementById('dur-' + x);
+    if (el) el.classList.toggle('selected', (d === '4+' ? '4' : d) === x);
+  });
+}
+
+function startMatch() {
+  if (matchTimer) clearTimeout(matchTimer);
+  const found = document.getElementById('match-found');
+  const spinner = document.getElementById('match-spinner');
+  const title = document.getElementById('match-title');
+  const sub = document.getElementById('match-sub');
+  const tl = document.getElementById('tl-matching');
+  const tc = document.getElementById('tl-confirm');
+  if (found) found.style.display = 'none';
+  if (spinner) { spinner.style.animation = 'spin 2s linear infinite'; spinner.textContent = '🔍'; }
+  if (title) title.textContent = 'Finding your professional';
+  if (sub) sub.textContent = 'Checking 12 available professionals near you…';
+  if (tl) { tl.className = 'tl-icon tl-active'; tl.textContent = '◎'; }
+  if (tc) { tc.className = 'tl-icon tl-pending'; tc.textContent = '→'; }
+
+  matchTimer = setTimeout(() => {
+    if (sub) sub.textContent = 'Verifying licenses for Sacramento, CA…';
+    matchTimer = setTimeout(() => {
+      if (tl) { tl.className = 'tl-icon tl-done'; tl.textContent = '✓'; }
+      if (tc) { tc.className = 'tl-icon tl-active'; tc.textContent = '◎'; }
+      if (sub) sub.textContent = 'Match found — awaiting acceptance…';
+      matchTimer = setTimeout(() => {
+        if (spinner) { spinner.style.animation = 'none'; spinner.textContent = '✅'; }
+        if (title) title.textContent = 'Professional matched!';
+        if (sub) sub.textContent = 'Diana accepted your request.';
+        if (tc) { tc.className = 'tl-icon tl-done'; tc.textContent = '✓'; }
+        if (found) found.style.display = 'block';
+      }, 1800);
+    }, 1400);
+  }, 1600);
+}
+
+let currentRating = 5;
+const labels = ['','1 star — Poor','2 stars — Fair','3 stars — Good','4 stars — Great','5 stars — Outstanding'];
+function setRating(n) {
+  currentRating = n;
+  document.querySelectorAll('.star-btn').forEach((s, i) => s.classList.toggle('lit', i < n));
+  const lbl = document.getElementById('rating-label');
+  if (lbl) lbl.textContent = labels[n];
+}
+
+function submitRating() {
+  showToast('✓ Rating submitted — Thank you!');
+  setTimeout(() => goto('screen-home'), 1200);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') {
+    const order = ['screen-splash','screen-home','screen-service','screen-prefs','screen-match','screen-confirm','screen-tracking','screen-rating'];
+    const idx = order.indexOf(currentScreen);
+    if (idx < order.length - 1) goto(order[idx+1]);
+  }
+  if (e.key === 'ArrowLeft') {
+    const order = ['screen-splash','screen-home','screen-service','screen-prefs','screen-match','screen-confirm','screen-tracking','screen-rating'];
+    const idx = order.indexOf(currentScreen);
+    if (idx > 0) goto(order[idx-1]);
+  }
+});
+
+// init tier selection
+selectTier('companion');
+</script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+</body>
+</html>
